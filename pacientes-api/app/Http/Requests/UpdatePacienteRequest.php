@@ -19,7 +19,7 @@ class UpdatePacienteRequest extends FormRequest
      */
     public function rules(): array
     {
-        $pacienteId = $this->route('paciente');
+        $pacienteId = $this->route('paciente')->id;
 
         return [
             'tipo_documento_id' => 'required|exists:tipo_documentos,id',
