@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\LoginRequest;
 use Tymon\JWTAuth\Facades\JWTAuth;
-
 
 class UserController extends Controller
 {
-    public function login(Request $request)
+    /**
+     * Login user and return access token.
+     * Utiliza Form Request para validación centralizada.
+     */
+    public function login(LoginRequest $request)
     {
-        $credentials = $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string'
-        ]);
+        $credentials = $request->validated();
 
         if (!$token = auth('api')->attempt($credentials)) {
             return response()->json(['message' => 'Credenciales inválidas'], 401);
@@ -28,11 +27,17 @@ class UserController extends Controller
         ]);
     }
 
+    /**
+     * Get authenticated user info.
+     */
     public function me()
     {
         return response()->json(auth()->user());
     }
 
+    /**
+     * Logout user.
+     */
     public function logout()
     {
         auth()->logout();

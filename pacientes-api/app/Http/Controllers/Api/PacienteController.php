@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\StorePacienteRequest;
+use App\Http\Requests\UpdatePacienteRequest;
 use App\Http\Controllers\Controller;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
@@ -9,18 +11,19 @@ use Illuminate\Http\Request;
 class PacienteController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with search and pagination.
      */
     public function index(Request $request)
     {
-        $query = \App\Models\Paciente::query();
+        $query = Paciente::query();
 
-        if ($request->has('q')) {
+        // Búsqueda opcional
+        if ($request->has('q') && !empty($request->q)) {
             $q = $request->q;
             $query->where(function ($sub) use ($q) {
-                $sub->where('nombre1', 'like', "%$q%")
-                    ->orWhere('apellido1', 'like', "%$q%")
-                    ->orWhere('correo', 'like', "%$q%");
+                $sub->where('nombre1', 'like', "%{$q}%")
+                    ->orWhere('apellido1', 'like', "%{$q}%")
+                    ->orWhere('correo', 'like', "%{$q}%");
             });
         }
 
@@ -29,23 +32,11 @@ class PacienteController extends Controller
 
     /**
      * Store a newly created resource in storage.
+     * Utiliza Form Request para validación centralizada.
      */
-    public function store(Request $request)
+    public function store(StorePacienteRequest $request)
     {
-        $data = $request->validate([
-            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'numero_documento' => 'required|string',
-            'nombre1' => 'required|string',
-            'nombre2' => 'nullable|string',
-            'apellido1' => 'required|string',
-            'apellido2' => 'nullable|string',
-            'genero_id' => 'required|exists:generos,id',
-            'departamento_id' => 'required|exists:departamentos,id',
-            'municipio_id' => 'required|exists:municipios,id',
-            'correo' => 'required|email|unique:pacientes,correo',
-        ]);
-
-        $paciente = Paciente::create($data);
+        $paciente = Paciente::create($request->validated());
 
         return response()->json([
             'message' => 'Paciente creado correctamente',
@@ -56,50 +47,34 @@ class PacienteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Paciente $paciente)
     {
-        $paciente = Paciente::findOrFail($id);
         return response()->json($paciente, 200);
     }
 
     /**
      * Update the specified resource in storage.
+     * Utiliza Form Request para validación centralizada.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdatePacienteRequest $request, Paciente $paciente)
     {
-        $paciente = Paciente::findOrFail($id);
-
-        $data = $request->validate([
-            'tipo_documento_id' => 'required|exists:tipo_documentos,id',
-            'numero_documento' => 'required|string',
-            'nombre1' => 'required|string',
-            'nombre2' => 'nullable|string',
-            'apellido1' => 'required|string',
-            'apellido2' => 'nullable|string',
-            'genero_id' => 'required|exists:generos,id',
-            'departamento_id' => 'required|exists:departamentos,id',
-            'municipio_id' => 'required|exists:municipios,id',
-            'correo' => 'required|email|unique:pacientes,correo,' . $paciente->id,
-        ]);
-
-        $paciente->update($data);
+        $paciente->update($request->validated());
 
         return response()->json([
             'message' => 'Paciente actualizado correctamente',
             'data' => $paciente
-        ]);
+        ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Paciente $paciente)
     {
-        $paciente = Paciente::findOrFail($id);
         $paciente->delete();
 
         return response()->json([
             'message' => 'Paciente eliminado correctamente'
-        ]);
+        ], 200);
     }
 }
