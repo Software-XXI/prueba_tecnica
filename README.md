@@ -42,7 +42,7 @@ Desarrollar una matriz CRUD para el listado de pacientes, respetando las siguien
 ## 🚀 Instalación Backend
 
 ```bash
-git clone <repo>
+git clone https://github.com/Software-XXI/prueba_tecnica
 cd pacientes-api
 composer install
 ```
